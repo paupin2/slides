@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang=en-us>
+<meta charset=utf-8>
+<title>Slides - {{.deck.Title}}</title>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link media="all" rel="stylesheet" href="{{.baseurl}}/editor.css" />
+<body><header>
+<button id="clear">clear screen</button>
+<button id="show-ed" class="toggle down">edit</button>
+<button id="show-slides" class="toggle down">slides</button>
+<button id="cleanup" title="Lollerskates">cleanup</button>
+<button id="show-help" class="toggle">help</button>
+</header>
+<div id="container"><textarea id="editor" placeholder="Insert text for slides here">
+</textarea></div><ul id="preview"></ul>
+<div id="help">
+<p>
+Simply write or paste text on the editor, to show slides on the right.
+Leave an <b>empty line</b> to start a new slide.
+Things like "verse" or "chorus" are automagically ignored,
+along with lines containing only chords or starting with "#".
+</p>
+<p>All changes are saved automatically.</p>
+<p>
+Click the slides to change the screen visible on the screen,
+and click the "clear screen" button to clear it.
+</p>
+</div>
+<script type="text/javascript" src="{{.baseurl}}/jquery.js"></script>
+<script type="text/javascript" src="{{.baseurl}}/common.js"></script>
+<script type="text/javascript" src="{{.baseurl}}/editor.js"></script>
+</body>

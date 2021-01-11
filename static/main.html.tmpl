@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang=en-us>
+<meta charset=utf-8>
+<title>Slides - Editor</title>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link media="all" rel="stylesheet" href="{{.baseurl}}/main.css" />
+<body>
+<h1>Slides</h1>
+<ul>
+	{{range .decks}}
+		<li>
+			<h2>{{.}}</h2>
+			<div>
+				<a href="/decks/{{.}}/editor" class="edit-link">
+					editor
+				</a>
+				<a href="/decks/{{.}}/screen" class="screen-link">
+					screen
+				</a>
+			</div>
+		</li>
+	{{else}}
+		<li>No slide decks yet…</li>
+	{{end}}
+</ul>
+<h1>Create a new deck</h1>
+<form method="POST" action="/decks/new">
+	<input type="text" name="title" value="{{.nextSunday}}">
+	<button>create</button>
+</form>
+</body>

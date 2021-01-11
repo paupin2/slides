@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang=en-us>
+<meta charset=utf-8>
+<title>Slides</title>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link media="all" rel="stylesheet" href="{{.baseurl}}/editor.css" />
+<body>
+	<h1>Error</h1>
+	<p>
+		{{if .error}}
+			{{.error}}
+		{{else}}
+			Something went wrong…
+			Try again or go <a href="/">back to the beginning</a>.
+		{{end}}
+	</p>
+</body>

@@ -1,0 +1,167 @@
+/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background-color:#ece3d2;
+}
+header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 50px;
+	padding: 2px 4px;
+}
+button {
+	padding: 1px 6px 1px 6px;
+	box-shadow: rgba(0,0,0,0.5) 0px 0px 2px;
+	cursor: pointer;
+}
+button:active {
+	box-shadow: rgba(128,128,0,0.5) 0px 0px 4px;
+}
+button.down {
+	background-color: bisque;
+	box-shadow: rgba(128,128,0,0.5) 0px 0px 4px;
+}
+
+#container {
+	position: fixed;
+	top:25px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: hidden;
+}
+textarea#editor {
+	height: 100%;
+	width: 100%;
+	border: none;
+	background-color: transparent;
+
+	font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
+	font-size: 12px;
+	background: #fff;
+	line-height: 1.5;
+	padding: 2px 5px;
+}
+ul#preview {
+	list-style: none;
+	padding: 0;
+	margin: 24px 0 0 0;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 265px;
+
+	overflow: scroll;
+	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+}
+ul#preview::-webkit-scrollbar {
+	display: none;
+}
+
+ul#preview>li {
+	position: relative;
+	display: flex;
+	text-align: center;
+	padding: 0;
+	margin: 7px 3px;
+	box-sizing: border-box;
+	align-items: center;
+	justify-content: center;
+}
+
+.label {
+	font-weight: bold;
+	font-size: 24px;
+	color: blue;
+	white-space: nowrap;
+	overflow: hidden;
+	padding: 0 0 5px 0 !important;
+}
+
+.slide {
+	color: black;
+	overflow: hidden;
+	border-radius: 6px;
+	background-color: white;
+	transition: background-color 0.2s ease-out;
+
+	box-shadow: rgba(0,0,0,0.3) 0 0 5px;
+	border: 2px solid white;
+	cursor: pointer;
+}
+
+@keyframes selecting {
+	0% { transform: scale(1); }
+	25% { transform: scale(0.9); }
+	100% { transform: scale(1); }
+}
+.slide:hover {
+	border-color: silver;
+}
+.slide.selected:hover {
+	border-color: blue;
+}
+
+.slide.selected {
+    animation: 0.5s selecting!important;
+	border-color: rgb(0, 136, 255);
+}
+.slide.selected:after {
+	content: "🖥";
+	position: absolute;
+	top: 0;
+	right: 2px;
+	font-size: 20px;
+	opacity: 0.5;
+}
+
+@keyframes focusing {
+	0% { background-color: white; }
+	25% { background-color: yellow; }
+	100% { background-color: white; }
+}
+.slide.focus {
+    animation: 1s focusing;
+}
+.slide.focus:before {
+	content: "✏️";
+	position: absolute;
+	top: 0;
+	left: 2px;
+	font-size: 20px;
+	opacity: 0.5;
+}
+
+#help {
+	position: absolute;
+    top: 70px;
+	left: 6px;
+	max-width: 320px;
+    z-index: 2;
+    color: black;
+    background: wheat;
+    border: 1px solid brown;
+    border-radius: 10px;
+	padding: 0 20px;
+	pointer-events: none;
+	opacity: 0.9;
+}
+
+body.noeditor #text {
+	display: none;
+}
+body.noeditor ul#preview {
+	width: auto;
+}
+body.noslides ul#preview {
+	display: none;
+}
+body.nohelp #help {
+	opacity: 0;
+}
