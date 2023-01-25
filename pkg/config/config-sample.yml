@@ -1,0 +1,9 @@
+address: localhost:8080
+baseurl: http://localhost:8080
+path:
+  log: /path/to/slides.log
+  db: /path/to/slides.sqlite3
+
+planningcenter:
+  appid: planning-center-app-id
+  secret: planning-center-token

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang=en-us>
+<head>
+<meta charset=utf-8>
+<title>Slides</title>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link media="all" rel="stylesheet" href="main.css" />
+<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+</head>
+<body><div id="loading"><div></div></div>
+	<div id="container"><ul class="tab-line"></ul></div>
+	<div id="version"></div>
+	<script type="vue-template" id="vue-decks">
+		<div class="menu">
+			<a @click="showRecent = !showRecent" class="button i-clock"></a>
+			<a @click="refresh" class="button i-refresh"></a>
+		</div>
+		<div id="recent-songs" v-if="showRecent">
+			<h2>Recent songs</h2>
+			<table>
+				<thead><th></th><th v-for="title in recent.titles"><span>{{title}}</span></th></thead>
+				<tbody>
+					<tr v-for="row in recent.rows">
+						<td>{{row.song.title}}</td>
+						<td v-for="c in row.cells" :class="{used:!!c}"><span v-if="c">x</span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<ul class="calendars boxes">
+			<li class="calendar"><calendar :delta="-1" :used="used" :state="refreshCount"></calendar></li>
+			<li class="calendar"><calendar :delta="0" :used="used" :state="refreshCount"></calendar></li>
+			<li class="calendar"><calendar :delta="1" :used="used" :state="refreshCount"></calendar></li>
+		</ul>
+		<ul class="deck-list">
+			<li v-for="d in decks">
+				<div>
+					<a @click="edit(d)" class="i-edit button"></a>
+					<a :href="d.link" target="_top" class="i-screen button"></a>
+					<a @click="present(d)" class="i-remote button"></a>
+				</div>
+				<div>
+					<div>{{ d.title }}</div>
+					<div v-if="d.fuzzy">{{d.fuzzy}}</div>
+					<div v-if="d.songs.length">{{ d.songs.length }} song{{ d.songs.length == 1 ? '' : 's'}}</div>
+				</div>
+			</li>
+		</ul>
+	</script>
+	<script type="vue-template" id="vue-songs">
+		<div class="menu">
+			<a v-if="selected && tabs.previous && tabs.previous.kind == 'editor'" @click="addToEditor" class="button i-forward"></a>
+			<a v-if="selected" @click="edit(selected)" class="button i-edit"></a>
+			<a @click="edit(null)" class="button i-add"></a>
+			<a v-if="selected" @click="copy" class="button i-copy"></a>
+			<a @click="refresh" class="button i-refresh"></a>
+			<a v-if="search_text.length" @click="clean" class="button i-broom"></a>
+		</div>
+		<form>
+			<input type="text" placeholder="Song title" ref="search" v-model="search_text" @keyup="search">
+			<div v-if="matches.length == 0"><br>No match!</div>
+		</form>
+		<ul class="song-list">
+			<li
+				v-for="m in matches"
+				:class="{selected: m == selected, imported: m.imported}"
+				@click.prevent="selected = m"
+				@dblclick.prevent="addToEditor"
+			>
+				<span v-html="m.markup" v-if="m.markup"></span>
+				<span v-else>{{ m.song.title }}</span>
+				<span> (@{{m.song.id}})</span>
+				<ul v-if="m.song.author || m.song.ccli" class="info">
+					<li v-if="m.song.author">{{m.song.author}}</li>
+					<li v-if="m.song.ccli">CCLI:{{m.song.ccli}}</li>
+				</ul>
+			</li>
+		</ul>
+	</script>
+	<script type="vue-template" id="vue-thumbs">
+		<ul
+			class="thumbs"
+			:class="{'clickable-thumbs':clickable!==undefined, 'editor-thumbs':editor!==undefined}"
+		>
+			<li
+				v-for="s in slides"
+				:class="[s.classes, {selected: s == selected}]"
+				:style="s.style"
+				@click="$emit('clicked', s)"
+			>
+				<caption v-if="s.headers"><div v-for="h in s.headers">{{ h }}</div></caption>
+				<span>{{ s.text }}</span>
+			</li>
+			<li v-if="slides.length" class="end">❦</li>
+		</ul>
+	</script>
+	<script type="vue-template" id="vue-editor">
+		<div class="menu">
+			<a v-if="!!deck" @click="deck.cleanup()" class="button i-broom"></a>
+			<a v-if="!!deck && !deck.dirty" @click="trash" class="button i-trash"></a>
+			<a v-if="!!deck && deck.dirty" @click="deck.save()" class="button i-save"></a>
+			<a v-if="!!deck && deck.dirty" @click="deck.revert()" class="button i-discard"></a>
+			<a v-if="!deck || !deck.dirty" @click="tab.close()" class="button i-close"></a>
+		</div>
+		<thumbs :selected="thumb" :slides="deck.slides" @clicked="show($event)" editor clickable/>
+		<textarea
+			v-model="deck.text"
+			ref="editor"
+			@keyup="deck.update()"
+			placeholder="Insert text for slides here"
+		></textarea>
+	</script>
+	<script type="vue-template" id="vue-song">
+		<div class="menu">
+			<a v-if="!!song" @click="cleanup" class="button i-broom"></a>
+			<a v-if="!!song && !song.dirty" @click="trash" class="button i-trash"></a>
+			<a v-if="!!song && song.dirty" @click="song.save()" class="button i-save"></a>
+			<a v-if="!!song && song.dirty" @click="song.revert()" class="button i-discard"></a>
+			<a v-if="!song || !song.dirty" @click="tab.close()" class="button i-close"></a>
+		</div>
+		<thumbs :slides="song.slides" editor/>
+		<textarea
+			v-model="song.text"
+			ref="editor"
+			@keyup="keyup"
+			placeholder="Insert text for slides here"
+		></textarea>
+	</script>
+	<script type="vue-template" id="vue-remote">
+		<div class="menu">
+			<a class="button i-hide" @click="hide"></a>
+			<a class="button i-refresh" @click="load"></a>
+			<a class="button i-close" @click="tab.close()"></a>
+		</div>
+		<thumbs :selected="thumb" :slides="deck.slides" @clicked="show($event)" clickable/>
+	</script>
+	<script type="vue-template" id="vue-calendar">
+		<table class="calendar">
+			<tr><th></th><th colspan="7">{{title}}</th></tr>
+			<tr><th></th><th v-for="d in ['M','T','W','T','F','S','S']" class="weekday">{{d}}</th></tr>
+			<tr v-for="tr in rows">
+				<td v-for="td in tr" :class="[td.cl, {used:td.used}]" @click="edit(td.iso)">{{ td.tx }}</td>
+			</tr>
+		</table>
+	</script>
+	<script type="vue-template" id="vue-help">
+		<div class="help-text">
+			<p>
+				<b>Decks</b> is a simple tool to quickly create and present slide decks.
+				On the top is the tab bar. Pick a deck to edit or present, and a new tab opens.<br>
+				To switch to a tab, click on its title. To close a tab, click on the <a class="i-close button"></a> button.
+			</p>
+
+			<h2>Decks</h2>
+			<p>
+				On the <b>decks</b> tab, click on any calendar day to edit the deck for that day.<br>
+				The <a class="button i-refresh"></a> button refreshes the list, in case a deck was added from another window.<br>
+				On each item, click <a class="i-edit button"></a> to edit it in a new tab,
+				<a class="i-screen button"></a> to open its screen and <a class="i-remote button"></a> to open the presenter view.
+			</p>
+
+			<h2>Songs</h2>
+			<p>
+				Use the <b>songs</b> tab to search for songs. Try using just the first letter of each word.<br>
+				The <a class="button i-refresh"></a> button refreshes the list,
+				and <a class="button i-broom"></a> clears the search text and shows all songs again.<br>
+				After selecting a song, <a class="i-copy button"></a> will fetch its text and copy it to the clipboard.
+				Then you can paste it in an editor. Or click <a class="i-forward button"></a> to add it automatically to
+				the most recently-used editor. You can also do this by <b>double-clicking</b> the song title.<br>
+				Click <a class="button i-add"></a> to create a new song.
+			</p>
+
+			<h2>Editor</h2>
+			<p>
+				Editing is simple. Just write the text, and leave an empty line to start a new line.
+				Lines starting with "#", or verses that look like "Verse 1", or "Chorus" are considered labels.
+				Lines containing only chords are ignored.<br>
+
+				On the right there are thumbnails, to preview how each slide is going to look on the screen.
+				You can click the thumbnails to show slide on the screen.
+				Click <a class="button i-broom"></a> to clean the text from ignored (chords) lines.
+				And after you made changes to a slide, don't forget to <b>save</b> with <a class="button i-save"></a>.
+				Or, if you wanto to discard your changes, click <a class="button i-discard"></a>.<br>
+
+				You can also want to use smaller text, aligned to the bottom, in case you want to overlay the text on a video.
+				If you start a slide with an underscore ("_"), it will use <b>subtitles</b> mode.
+				On this mode, only the first 2 lines of the slide are shown, on a smaller font, aligned to the bottom.
+			</p>
+
+			<h2>Song editor</h2>
+			<p>
+				This works similarly to the deck editor, with the difference that the first label is saved as the song title.
+				All buttons work like on the editor.
+			</p>
+
+			<h2>Presenter</h2>
+			<p>
+				Though you can control the screen from the editor view, it's easier to do it from the presenter view.
+				This contains only the actual thumbnails, not the text.
+				From here you can also click the <a class="button i-hide"></a> button to blank the screen.<br>
+			</p>
+			<p>
+				You can have <b>as many screens</b> as you want for a deck, and they are all updated simultaneously.
+				You can also control a deck from different places (eg, from your phone and from a laptop).
+			</p>
+		</div>
+	</script>
+	<script type="text/javascript" src="vue.js"></script>
+	<script type="text/javascript" src="dayjs.js"></script>
+	<script type="text/javascript" src="lib.js"></script>
+	<script type="text/javascript" src="classes.js"></script>
+	<script type="text/javascript" src="main.js"></script>
+</body>

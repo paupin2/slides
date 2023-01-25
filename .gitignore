@@ -1,0 +1,5 @@
+.DS_Store
+out/
+*.sqlite3
+config.yaml
+
